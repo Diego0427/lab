@@ -1,0 +1,166 @@
+import java.io.*;
+import java.util.*;
+
+public class Main {
+    public static void main(String[] args) {
+        BigVigenere vigenere = new BigVigenere();
+        Scanner scanner = new Scanner(System.in);
+
+        System.out.print("Ingrese el mensaje a encriptar: ");
+        String mensaje = scanner.nextLine().toUpperCase();
+
+        String encriptado = vigenere.encrypt(mensaje);
+        System.out.println("Mensaje encriptado: " + encriptado);
+
+        String desencriptado = vigenere.decrypt(encriptado);
+        System.out.println("Mensaje desencriptado: " + desencriptado);
+
+        vigenere.reEncrypt();
+
+        int[] claves = {10, 50, 100, 500, 1000, 5000};
+        String mensajeLargo = generarMensajeLargo(10000);
+
+        for (int claveSize : claves) {
+            String claveAleatoria = generarClaveAleatoria(claveSize);
+            vigenere = new BigVigenere(claveAleatoria);
+
+            long startTimeEncrypt = System.nanoTime();
+            String mensajeEncriptado = vigenere.encrypt(mensajeLargo);
+            long endTimeEncrypt = System.nanoTime();
+            long durationEncrypt = endTimeEncrypt - startTimeEncrypt;
+
+            long startTimeDecrypt = System.nanoTime();
+            String mensajeDesencriptado = vigenere.decrypt(mensajeEncriptado);
+            long endTimeDecrypt = System.nanoTime();
+            long durationDecrypt = endTimeDecrypt - startTimeDecrypt;
+
+            System.out.println("Tamaño de la clave: " + claveSize);
+            System.out.println("Tiempo de cifrado (en nanosegundos): " + durationEncrypt);
+            System.out.println("Tiempo de descifrado (en nanosegundos): " + durationDecrypt);
+            System.out.println();
+        }
+    }
+
+    private static String generarMensajeLargo(int longitud) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < longitud; i++) {
+            sb.append((char) ('A' + Math.random() * 26));
+        }
+        return sb.toString();
+    }
+
+    private static String generarClaveAleatoria(int longitud) {
+        StringBuilder sb = new StringBuilder();
+        String alfabeto = "ABCDEFGHIJKLMNÑOPQRSTUVWXYZ0123456789";
+        for (int i = 0; i < longitud; i++) {
+            sb.append(alfabeto.charAt((int) (Math.random() * alfabeto.length())));
+        }
+        return sb.toString();
+    }
+}
+
+class BigVigenere {
+    private int[] key;
+    private String alfabeto = "ABCDEFGHIJKLMNÑOPQRSTUVWXYZ0123456789";
+
+    public BigVigenere() {
+        Scanner scanner = new Scanner(System.in);
+        System.out.print("Ingrese la clave : ");
+        String clave = scanner.nextLine().toUpperCase();
+
+        key = new int[clave.length()];
+        for (int i = 0; i < clave.length(); i++) {
+            key[i] = alfabeto.indexOf(clave.charAt(i));
+        }
+    }
+
+    public BigVigenere(String clave) {
+        key = new int[clave.length()];
+        for (int i = 0; i < clave.length(); i++) {
+            key[i] = alfabeto.indexOf(clave.charAt(i));
+        }
+    }
+
+    public String encrypt(String mensaje) {
+        ArrayList<Character> mensajeEnlista = new ArrayList<>();
+        ArrayList<Integer> ListaNumeros = new ArrayList<>();
+        ArrayList<Character> mensajeEncriptado = new ArrayList<>();
+
+        for (int i = 0; i < mensaje.length(); i++) {
+            mensajeEnlista.add(mensaje.charAt(i));
+        }
+
+        for (int k = 0; k < mensajeEnlista.size(); k++) {
+            ListaNumeros.add(alfabeto.indexOf(mensajeEnlista.get(k)));
+        }
+
+        for (int i = 0; i < mensajeEnlista.size(); i++) {
+            int nuevaPos = (ListaNumeros.get(i) + key[i % key.length]) % alfabeto.length();
+            mensajeEncriptado.add(alfabeto.charAt(nuevaPos));
+        }
+
+        StringBuilder cadena = new StringBuilder();
+        for (char c : mensajeEncriptado) {
+            cadena.append(c);
+        }
+
+        return cadena.toString();
+    }
+
+    public String decrypt(String mensajeEncriptado) {
+        ArrayList<Character> mensajeEnlista = new ArrayList<>();
+        ArrayList<Integer> ListaNumeros = new ArrayList<>();
+        ArrayList<Character> mensajeDesencriptado = new ArrayList<>();
+
+        for (int i = 0; i < mensajeEncriptado.length(); i++) {
+            mensajeEnlista.add(mensajeEncriptado.charAt(i));
+        }
+
+        for (int k = 0; k < mensajeEnlista.size(); k++) {
+            ListaNumeros.add(alfabeto.indexOf(mensajeEnlista.get(k)));
+        }
+
+        for (int i = 0; i < mensajeEnlista.size(); i++) {
+            int nuevaPos = (ListaNumeros.get(i) - key[i % key.length] + alfabeto.length()) % alfabeto.length();
+            mensajeDesencriptado.add(alfabeto.charAt(nuevaPos));
+        }
+
+        StringBuilder cadena = new StringBuilder();
+        for (char c : mensajeDesencriptado) {
+            cadena.append(c);
+        }
+
+        return cadena.toString();
+    }
+
+    public void reEncrypt() {
+        Scanner scanner = new Scanner(System.in);
+
+        System.out.print("Ingrese el mensaje encriptado: ");
+        String cifrado = scanner.nextLine().toUpperCase();
+
+        String desencriptar = decrypt(cifrado);
+
+        System.out.println("Ingrese la clave nueva ");
+
+        String ClaveNueva = scanner.nextLine().toUpperCase();
+
+        key = new int[ClaveNueva.length()];
+        for (int i = 0; i < ClaveNueva.length(); i++) {
+            int pos = alfabeto.indexOf(ClaveNueva.charAt(i));
+        }
+
+        String clavenuevacifrada = encrypt(desencriptar);
+
+        System.out.println("El nuevo mensaje encriptado es: " + clavenuevacifrada);
+    }
+
+
+    public char search(int position) {
+        if (position >= 0 && position < alfabeto.length()) {
+            return alfabeto.charAt(position);  // Retorna el carácter en la posición indicada
+        } else {
+            throw new IllegalArgumentException("Posición fuera de rango");
+        }
+    }
+}

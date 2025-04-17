@@ -1,0 +1,207 @@
+import java.util.*;
+import java.util.Map;
+import java.util.HashMap;
+
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        Urnaelectoral urna = new Urnaelectoral(1);
+
+       
+        Candidato c1 = new Candidato(101, "Juan Pérez", "Partido Rojo");
+        Candidato c2 = new Candidato(102, "Ana Gómez", "Partido Azul");
+        urna.agregarCandidato(c1);
+        urna.agregarCandidato(c2);
+
+       
+        Votante v1 = new Votante(201, "Carlos Ramírez");
+        Votante v2 = new Votante(202, "María Torres");
+
+   
+        System.out.println("Simulación de votación:");
+
+        urna.registrarVoto(v1, 101); 
+        urna.registrarVoto(v2, 102); 
+        urna.registrarVoto(v1, 102); 
+
+ 
+        System.out.println("\nRESULTADOS FINALES:");
+        urna.obtenerResultados();
+    }
+}
+
+class Voto {
+    private int ID;
+    private int votanteID;
+    private int candidatoID;
+    private String timestamp;
+
+    public Voto(int ID, int votanteID, int candidatoID, String timestamp) {
+        this.ID = ID;
+        this.votanteID = votanteID;
+        this.candidatoID = candidatoID;
+        this.timestamp = timestamp;
+    }
+
+    public int getID() {
+        return ID;
+    }
+
+    public int getVotanteID() {
+        return votanteID;
+    }
+
+    public int getCandidatoID() {
+        return candidatoID;
+    }
+
+    public String getTimestamp() {
+        return timestamp;
+    }
+}
+
+
+class Candidato {
+    private int ID;
+    private String nombre;
+    private String partido;
+    private Queue<Voto> votosRecibidos;
+
+    public Candidato(int ID, String nombre, String partido) {
+        this.ID = ID;
+        this.nombre = nombre;
+        this.partido = partido;
+        this.votosRecibidos = new LinkedList<>();
+    }
+
+    public int getID() {
+        return ID;
+    }
+
+    public String getNombre() {
+        return nombre;
+    }
+
+    public String getPartido() {
+        return partido;
+    }
+
+    public Queue<Voto> getVotosRecibidos() {
+        return votosRecibidos;
+    }
+
+    public void agregarVoto(Voto v) {
+        votosRecibidos.add(v);
+    }
+}
+
+class Votante {
+    private int ID;
+    private String nombre;
+    private boolean yaVoto;
+
+    public Votante(int ID, String nombre) {
+        this.ID = ID;
+        this.nombre = nombre;
+        this.yaVoto = yaVoto;
+    }
+
+    public int getID() {
+        return ID;
+    }
+
+    public String getNombre() {
+        return nombre;
+    }
+
+    public boolean haVotado() {
+        return yaVoto;
+    }
+
+    public void marcarComoVotado() {
+        yaVoto = true;
+    }
+}
+
+class Urnaelectoral {
+    private LinkedList<Candidato> listaCandidatos;
+    private Stack<Voto> historialVotos;
+    private Queue<Voto> votosReportados;
+    private int idCounter;
+
+    public Urnaelectoral(int idCounter) {
+        this.idCounter = idCounter;
+        this.listaCandidatos = new LinkedList<>();
+        this.historialVotos = new Stack<>();
+        this.votosReportados = new LinkedList<>();
+    }
+
+    public void verificarVotante(Votante votante, Voto voto) {
+    if (votante.haVotado()) {
+        votosReportados.add(voto);
+        System.out.println("El votante ya tiene un voto registrado");
+    } else {
+        votante.marcarComoVotado();
+        historialVotos.add(voto);
+        System.out.println("El voto ha sido añadido a la urna");
+    }
+}
+    public void registrarVoto(Votante votante, int candidatoID) {
+        
+        Scanner scanner = new Scanner(System.in);
+        System.out.print("Para ingresar el voto, anote la fecha en formato hh:mm:s -> ");
+        String timestamp = scanner.nextLine();
+     
+        Voto voto = new Voto(idCounter++, votante.getID(), candidatoID, timestamp);
+        verificarVotante(votante,voto);
+        for (int i = 0; i < listaCandidatos.size(); i++) {
+        Candidato c = listaCandidatos.get(i);
+        if (c.getID() == candidatoID) {
+            c.agregarVoto(voto);
+        }
+    }
+        historialVotos.add(voto);
+    }
+        
+    public void reportarVoto(Candidato candidato, int idVoto) {
+    Stack<Voto> tempStack = new Stack<>();
+
+    
+    while (!historialVotos.isEmpty()) {
+        Voto voto = historialVotos.pop();
+        if (voto.getID() == idVoto) {
+            votosReportados.add(voto);
+            System.out.println("Voto ID " + idVoto + " reportado correctamente.");
+            break;
+        } else {
+            tempStack.push(voto);
+        }
+    }
+
+    
+    while (!tempStack.isEmpty()) {
+        historialVotos.push(tempStack.pop());
+    }
+ }
+
+ public void obtenerResultados()
+ {
+    Map<String, Integer> cv = new HashMap<>();
+
+    for (int i = 0; i < listaCandidatos.size(); i++) {
+        Candidato c = listaCandidatos.get(i);
+        cv.put(c.getNombre(), c.getVotosRecibidos().size());
+    }
+    
+   
+    for (Map.Entry<String, Integer> entry : cv.entrySet()) {
+        System.out.println("Candidato: " + entry.getKey() + " - Votos: " + entry.getValue());
+    }
+ }
+ public void agregarCandidato(Candidato c) {
+    listaCandidatos.add(c);
+}
+ 
+}    
+    
